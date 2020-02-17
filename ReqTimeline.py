@@ -23,42 +23,40 @@ engine = sa.create_engine('mssql+pyodbc://PLKTW0-APP001/Cadworx_Request?driver=S
 # ORDER BY Req_Date"""
 sql = """SELECT Req_Date, COUNT(Req_Date) as Cnt FROM
 (
-SELECT Pr_Name, CAST(Requested_Date AS DATE) as Req_Date
+SELECT Pr_Name, Requested_Date as Req_Date
 FROM [Cadworx_Request].[dbo].[tblReqFitting]
 UNION ALL
-SELECT Pr_Name, CAST(Requested_Date AS DATE) as Req_Date
+SELECT Pr_Name, Requested_Date as Req_Date
 FROM [Cadworx_Request].[dbo].[tblReqComponent]
 UNION ALL
-SELECT Pr_Name, CAST(Requested_Date AS DATE) as Req_Date
+SELECT Pr_Name, Requested_Date as Req_Date
 FROM [Cadworx_Request].[dbo].[tblReqEquipment]
 )SubQry
 
 WHERE Pr_Name = 'Bluejay'
 
-Group by Req_Date
+GROUP BY Req_Date
 ORDER BY Req_Date"""
 
 df = pd.read_sql_query(sql, engine)
 df
-# Ten blok powinien sumować requesty na tydzień
 
-# df['Req_Date'] = pd.to_datetime(df['Req_Date']) - pd.to_timedelta(7, unit='d')
-# df = df.groupby(['Pr_Name', pd.Grouper(key='Req_Date', freq='W-MON')])['Cnt']
-#        .sum()
-#        .reset_index()
-#        .sort_values('Req_Date')
-# print(df)
+df.set_index('Req_Date', inplace=True)
+df_weekly = df.resample('W').sum().reset_index()
+df_weekly
 
+x = df_weekly.index
+y = df_weekly['Cnt']
+z = np.polyfit(x, y, 2) # how to add trendline
+p = np.poly1d(z)
 plt.figure(figsize=(10,5))
-# plt.xticks(np.arange(1,230,1))
-plt.plot_date(pd.to_datetime(df['Req_Date']),df['Cnt'])
-plt.savefig('C:/Users/tbieleni/Documents/plots/ProjectPerDay.png')
+plt.scatter(df_weekly.index,df_weekly['Cnt'])
+plt.plot(x,p(x),"r--")
+plt.savefig('C:/Users/tbieleni/Documents/plots/ProjectPerWeekTline.png')
+# plt.scatter(df_weekly.index,df_weekly['Cnt'])
+# plt.xticks(df_weekly['Req_Date'])
+# plt.legend(df['Pr_Name'], loc='upper right')
 
-plt.yticks(np.arange(0,2200,50))
-plt.xticks(np.arange(-1,6,1))
-plt.tick_params(bottom=False, labelbottom=False)
-plt.legend(df['Pr_Name'], loc='upper right')
-plt.savefig('C:/Users/tbieleni/Documents/plots/ProjectPerDay.png')
 
 
 
