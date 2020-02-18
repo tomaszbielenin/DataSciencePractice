@@ -47,10 +47,10 @@ df_weekly
 
 x = df_weekly.index
 y = df_weekly['Cnt']
-z = np.polyfit(x, y, 2) # how to add trendline
+z = np.polyfit(x, y, 5) # adjust trendline with polynomial deg
 p = np.poly1d(z)
 plt.figure(figsize=(10,5))
-plt.scatter(df_weekly.index,df_weekly['Cnt'])
+plt.scatter(df_weekly.index,df_weekly['Cnt'],s=5,color='purple')
 plt.plot(x,p(x),"r--")
 plt.savefig('C:/Users/tbieleni/Documents/plots/ProjectPerWeekTline.png')
 # plt.scatter(df_weekly.index,df_weekly['Cnt'])
