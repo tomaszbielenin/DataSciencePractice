@@ -149,7 +149,7 @@ x = df.index
 y = df['Duration']
 y_mean=[df['Duration'].mean()]*len(df.index)
 y_median=[df['Duration'].median()]*len(df.index)
-z = np.polyfit(x, y, 2) # how to add trendline
+z = np.polyfit(x, y, 3) # how to add trendline
 p = np.poly1d(z)
 plt.figure(figsize=(20,20))
 p0 = plt.scatter(df.index,df['Duration'],s=5,color='purple')

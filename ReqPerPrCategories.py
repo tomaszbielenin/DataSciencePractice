@@ -44,7 +44,7 @@ plt.xticks(ind, ('Bluejay', 'Blueridge', 'Joseph', 'OCOC', 'OOC', 'ST Agrate'))
 plt.legend((p0[0], p1[0],p2[0],p3[0]), ('Component', 'Equipment', 'Fittings', 'PipeSupport'), loc='upper right')
 plt.savefig('C:/Users/tbieleni/Documents/plots/ReqPerPrCategories.png')
 
-########
+######## Status per projects
 
 sql = """SELECT Pr_Name, Request_Status, COUNT(Request_Status)  as 'ReqCnt'
 FROM [Cadworx_Request].[dbo].[tblReqFitting]
@@ -131,6 +131,43 @@ plt.title('Equipment Requests per Status')
 plt.xticks(ind, ('Bluejay', 'Blueridge', 'Joseph', 'OCOC', 'OOC', 'ST Agrate'))
 plt.legend((p0[0],p1[0],p2[0]), ('Finished', 'Cancelled', 'On hold'), loc='upper right')
 plt.savefig('C:/Users/tbieleni/Documents/plots/EquipmentRequestStatus.png')
+
+######## Status per office
+
+sql = """SELECT Req_Office, Request_Status, COUNT(Request_Status)  as 'ReqCnt' FROM
+(
+SELECT Req_Office, Request_Status
+FROM [Cadworx_Request].[dbo].[tblReqFitting]
+UNION ALL
+SELECT Req_Office, Request_Status
+FROM [Cadworx_Request].[dbo].[tblReqComponent]
+UNION ALL
+SELECT Req_Office, Request_Status
+FROM [Cadworx_Request].[dbo].[tblReqEquipment]
+)SubQry
+
+WHERE Req_Office != 'XXX'
+
+GROUP BY Req_Office, Request_Status
+ORDER BY Req_Office,Request_Status"""
+
+df = pd.read_sql_query(sql, engine)
+df
+
+Finished = df['ReqCnt'].loc[df['Request_Status'] == 'Finished'].tolist()
+Cancelled = df['ReqCnt'].loc[df['Request_Status'] == 'Cancelled'].tolist() 
+Hold = df['ReqCnt'].loc[df['Request_Status'] == 'On hold'].tolist() #append 0 for missing records manually
+
+N = 9
+ind = np.arange(N)
+plt.figure(figsize=(10,10))
+p0 = plt.bar(ind, Finished, color='green')
+p1 = plt.bar(ind, Cancelled, bottom = np.array(Finished), color='orange')
+p2 = plt.bar(ind, Hold, bottom = np.array(Finished)+np.array(Cancelled), color='royalblue')
+plt.title('Request Status per Office')
+plt.xticks(ind, ('CIN', 'DEL', 'DUB', 'GVL', 'KRV', 'PDX','PGH','PHX','RON'))
+plt.legend((p0[0],p1[0],p2[0]), ('Finished', 'Cancelled', 'On hold'), loc='upper right')
+plt.savefig('C:/Users/tbieleni/Documents/plots/OfficeRequestStatus.png')
 
 # plt.bar(df['Req_Office'], df['Req_No'], align = 'center')
 # plt.title('Bluejay: Overall Number of Requests per Office')
